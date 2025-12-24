@@ -2,7 +2,7 @@
 
 namespace CsLox;
 
-class Program
+class Lox
 {
     private static bool hadError = false;
     
@@ -34,7 +34,7 @@ class Program
         else if (isInteractive)
         {
             ConsoleEx.WriteLine(ConsoleColor.Yellow, "Running in interactive REPL mode...");
-            await RunPromptAsync();
+            RunPrompt();
         }
         else
         {
@@ -50,7 +50,7 @@ class Program
     private static async Task RunFileAsync(string path)
     {
         string content = await File.ReadAllTextAsync(path);
-        await RunAsync(content);
+        Run(content);
 
         if (hadError)
         {
@@ -58,7 +58,7 @@ class Program
         }
     }
 
-    private static async Task RunPromptAsync()
+    private static void RunPrompt()
     {
         // display "> " prompt and read input line by line and execute RunAsync on each line
         while (true)
@@ -69,16 +69,16 @@ class Program
             {
                 break;
             }
-            await RunAsync(line);
+            Run(line);
         }
         
         hadError = false;
     }
 
-    private static async Task RunAsync(string source)
+    private static void Run(string source)
     {
         var scanner = new Scanner(source);
-        var tokens = await scanner.ScanTokensAsync();
+        var tokens = scanner.ScanTokens();
 
         foreach (var token in tokens)
         {
@@ -86,12 +86,12 @@ class Program
         }
     }
     
-    private static void error(int line, string message)
+    public static void Error(int line, string message)
     {
-        report(line, "", message);
+        Report(line, "", message);
     }
     
-    private static void report(int line, string what, string message)
+    private static void Report(int line, string what, string message)
     {
         Console.WriteLine($"[line {line}] Error{what}: {message}");
         hadError = true;
