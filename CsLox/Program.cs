@@ -4,6 +4,8 @@ namespace CsLox;
 
 class Program
 {
+    private static bool hadError = false;
+    
     static async Task<int> Main(string[] args)
     {
         var fileOption = new Option<FileInfo?>("--file") { Description = "Script file to execute" };
@@ -45,13 +47,18 @@ class Program
         return 0;
     }
 
-    static async Task RunFileAsync(string path)
+    private static async Task RunFileAsync(string path)
     {
         string content = await File.ReadAllTextAsync(path);
         await RunAsync(content);
+
+        if (hadError)
+        {
+            Environment.Exit(65);
+        }
     }
 
-    static async Task RunPromptAsync()
+    private static async Task RunPromptAsync()
     {
         // display "> " prompt and read input line by line and execute RunAsync on each line
         while (true)
@@ -64,9 +71,11 @@ class Program
             }
             await RunAsync(line);
         }
+        
+        hadError = false;
     }
 
-    static async Task RunAsync(string source)
+    private static async Task RunAsync(string source)
     {
         var scanner = new Scanner(source);
         var tokens = await scanner.ScanTokensAsync();
@@ -75,5 +84,16 @@ class Program
         {
             Console.WriteLine(token);
         }
+    }
+    
+    private static void error(int line, string message)
+    {
+        report(line, "", message);
+    }
+    
+    private static void report(int line, string what, string message)
+    {
+        Console.WriteLine($"[line {line}] Error{what}: {message}");
+        hadError = true;
     }
 }
