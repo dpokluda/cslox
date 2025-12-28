@@ -60,7 +60,6 @@ class Lox
 
     private static void RunPrompt()
     {
-        // display "> " prompt and read input line by line and execute RunAsync on each line
         while (true)
         {
             Console.Write("> ");
@@ -79,16 +78,31 @@ class Lox
     {
         var scanner = new Scanner(source);
         var tokens = scanner.ScanTokens();
-
-        foreach (var token in tokens)
-        {
-            Console.WriteLine(token);
-        }
+        
+        var parser = new Parser(tokens);
+        var expr = parser.Parse();
+        
+        if (hadError) return;
+        
+        var printer = new AstPrinter();
+        Console.WriteLine(expr.Accept(printer));
     }
     
     public static void Error(int line, string message)
     {
         Report(line, "", message);
+    }
+    
+    public static void Error(Token token, string message)
+    {
+        if (token.Type == TokenType.Eof)
+        {
+            Report(token.Line, " at end", message);
+        }
+        else
+        {
+            Report(token.Line, $" at '{token.Lexeme}'", message);
+        }
     }
     
     private static void Report(int line, string what, string message)

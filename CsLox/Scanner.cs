@@ -37,7 +37,7 @@ public class Scanner
     _line = 1;
   }
 
-  public IEnumerable<Token> ScanTokens()
+  public List<Token> ScanTokens()
   {
     while (!IsAtEnd())
     {

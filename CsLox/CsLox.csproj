@@ -11,4 +11,9 @@
     <PackageReference Include="System.CommandLine" Version="2.0.1" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="test.lox" />
+    <Content Include="test.lox" />
+  </ItemGroup>
+
 </Project>

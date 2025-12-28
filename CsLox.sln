@@ -5,6 +5,12 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsLox", "CsLox\CsLox.csproj", "{D4A9515E-74AA-4148-BDA6-5F080275912F}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{920E6C93-D6A8-41C2-9B4B-7C949DCF8ACB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateAst", "Tools\GenerateAst\GenerateAst.csproj", "{18F23F67-D82E-4798-85F5-A6519AF915A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Visitor", "Tools\Visitor\Visitor.csproj", "{ABC3A925-266B-4AF3-A8F9-93D67530EDCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +24,17 @@ Global
 		{D4A9515E-74AA-4148-BDA6-5F080275912F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D4A9515E-74AA-4148-BDA6-5F080275912F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D4A9515E-74AA-4148-BDA6-5F080275912F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18F23F67-D82E-4798-85F5-A6519AF915A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18F23F67-D82E-4798-85F5-A6519AF915A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18F23F67-D82E-4798-85F5-A6519AF915A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18F23F67-D82E-4798-85F5-A6519AF915A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABC3A925-266B-4AF3-A8F9-93D67530EDCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABC3A925-266B-4AF3-A8F9-93D67530EDCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABC3A925-266B-4AF3-A8F9-93D67530EDCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABC3A925-266B-4AF3-A8F9-93D67530EDCD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{18F23F67-D82E-4798-85F5-A6519AF915A1} = {920E6C93-D6A8-41C2-9B4B-7C949DCF8ACB}
+		{ABC3A925-266B-4AF3-A8F9-93D67530EDCD} = {920E6C93-D6A8-41C2-9B4B-7C949DCF8ACB}
 	EndGlobalSection
 EndGlobal
