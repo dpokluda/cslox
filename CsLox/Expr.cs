@@ -5,23 +5,23 @@ namespace CsLox;
 
 public abstract class Expr
 {
-    public abstract T Accept<T>(IVisitor<T> visitor);
-}
+     public interface IVisitor<T>
+     {
+         T VisitAssign(Assign expr);
+         T VisitBinary(Binary expr);
+         T VisitCall(Call expr);
+         T VisitGet(Get expr);
+         T VisitGrouping(Grouping expr);
+         T VisitLiteral(Literal expr);
+         T VisitLogical(Logical expr);
+         T VisitSet(Set expr);
+         T VisitSuper(Super expr);
+         T VisitThis(This expr);
+         T VisitUnary(Unary expr);
+         T VisitVariable(Variable expr);
+     }
 
-public interface IVisitor<T>
-{
-    T VisitAssign(Assign expr);
-    T VisitBinary(Binary expr);
-    T VisitCall(Call expr);
-    T VisitGet(Get expr);
-    T VisitGrouping(Grouping expr);
-    T VisitLiteral(Literal expr);
-    T VisitLogical(Logical expr);
-    T VisitSet(Set expr);
-    T VisitSuper(Super expr);
-    T VisitThis(This expr);
-    T VisitUnary(Unary expr);
-    T VisitVariable(Variable expr);
+    public abstract T Accept<T>(IVisitor<T> visitor);
 }
 
 public class Assign : Expr

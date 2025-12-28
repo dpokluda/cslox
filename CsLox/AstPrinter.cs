@@ -2,7 +2,7 @@ namespace CsLox;
 
 using System.Text;
 
-public class AstPrinter : IVisitor<string>
+public class AstPrinter : Expr.IVisitor<string>
 {
     public string VisitAssign(Assign expr)
     {

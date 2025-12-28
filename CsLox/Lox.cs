@@ -5,6 +5,8 @@ namespace CsLox;
 class Lox
 {
     private static bool hadError = false;
+    private static bool hadRuntimeError = false;
+    private static Interpreter interpreter = new();
     
     static async Task<int> Main(string[] args)
     {
@@ -56,6 +58,10 @@ class Lox
         {
             Environment.Exit(65);
         }
+        else if (hadRuntimeError)
+        {
+            Environment.Exit(70);
+        }
     }
 
     private static void RunPrompt()
@@ -86,6 +92,8 @@ class Lox
         
         var printer = new AstPrinter();
         Console.WriteLine(expr.Accept(printer));
+        
+        interpreter.Interpret(expr);
     }
     
     public static void Error(int line, string message)
@@ -104,10 +112,17 @@ class Lox
             Report(token.Line, $" at '{token.Lexeme}'", message);
         }
     }
-    
+
+    public static void RuntimeError(RuntimeException runtimeError)
+    {
+        Console.WriteLine($"{runtimeError.Message}\n[line {runtimeError.Token.Line}]");
+        hadRuntimeError = true;
+    }
+
     private static void Report(int line, string what, string message)
     {
         Console.WriteLine($"[line {line}] Error{what}: {message}");
         hadError = true;
     }
+
 }

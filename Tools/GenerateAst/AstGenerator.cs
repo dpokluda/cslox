@@ -13,18 +13,15 @@ public class AstGenerator
         string path = Path.Combine(outputDir, baseName + ".cs");
         using StreamWriter writer = new StreamWriter(path, false, System.Text.Encoding.UTF8);
 
+        // header
         writer.WriteLine($"//[ Appendix II {baseName}");
         foreach (var import in imports)
         {
             writer.WriteLine(import);
         }
         writer.WriteLine();
-        
-        writer.WriteLine($"public abstract class {baseName}");
-        writer.WriteLine("{");
-        writer.WriteLine("    public abstract T Accept<T>(IVisitor<T> visitor);");
-        writer.WriteLine("}");
-        
+
+        // define the base abstract class with Accept method and visitor interface
         List<(string ClassName, string Fields)> typeFields = new List<(string, string)>();
         foreach (var type in types)
         {
@@ -34,31 +31,39 @@ public class AstGenerator
             
             typeFields.Add((className, fields));
         }
-
+        
+        writer.WriteLine($"public abstract class {baseName}");
+        writer.WriteLine("{");
         DefineVisitor(writer, typeFields);
 
+        writer.WriteLine("    public abstract T Accept<T>(IVisitor<T> visitor);");
+        writer.WriteLine("}");
+        writer.WriteLine();
+
+        // define the concrete AST classes
         foreach (var (className, fields) in typeFields)
         {
             DefineType(writer, baseName, className, fields);
         }
         
+        // footer
         writer.WriteLine($"//] Appendix II {baseName}");
+        
         writer.Close();
         ConsoleEx.WriteLine(ConsoleColor.Green, $"Generated {baseName} in {path}.");
     }
 
     private static void DefineVisitor(StreamWriter writer, List<(string ClassName, string Fields)> typeFields)
     {
-        writer.WriteLine();
-        writer.WriteLine("public interface IVisitor<T>");
-        writer.WriteLine("{");
+        writer.WriteLine("     public interface IVisitor<T>");
+        writer.WriteLine("     {");
         
         // finish the IVisitor interface definition
         foreach (var (className, fields) in typeFields)
         {
-            writer.WriteLine($"    T Visit{className}({className} expr);");
+            writer.WriteLine($"         T Visit{className}({className} expr);");
         }
-        writer.WriteLine("}");
+        writer.WriteLine("     }");
         writer.WriteLine();
     }
 

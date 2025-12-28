@@ -17,7 +17,7 @@ public class Parser
         {
             return Expression();
         }
-        catch (ParseError e)
+        catch (ParseException e)
         {
             return null;
         }
@@ -181,9 +181,9 @@ public class Parser
         return _current >= _tokens.Count;
     }
     
-    private ParseError Error(Token token, string message)
+    private ParseException Error(Token token, string message)
     {
         Lox.Error(token.Line, message);
-        return new ParseError(token, message);
+        return new ParseException(token, message);
     }
 }

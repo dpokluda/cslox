@@ -1,1 +1,1 @@
-dotnet run -- --output ./ast
+dotnet run -- --output ../../ast
