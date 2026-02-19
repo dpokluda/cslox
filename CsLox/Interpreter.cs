@@ -4,6 +4,7 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 {
     private Environment _globals;
     private Environment _environment;
+    private readonly Dictionary<Expr, int> _locals = new Dictionary<Expr, int>();
     
     public Interpreter()
     {
@@ -38,6 +39,11 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         statement.Accept(this);
     }
     
+    public void Resolve(Expr expr, int depth)
+    {
+        _locals.Add(expr, depth);
+    }
+
     internal void ExecuteBlock(List<Stmt> exprStatements, Environment environment)
     {
         var previous = _environment;
@@ -104,7 +110,16 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     public object? VisitAssignExpr(Assign expr)
     {
         var value = Evaluate(expr.Value);
-        _environment.Assign(expr.Name.Lexeme, value);
+
+        if (_locals.TryGetValue(expr, out int distance))
+        {
+            _environment.AssignAt(distance, expr.Name, value);
+        }
+        else
+        {
+            _globals.Assign(expr.Name, value);
+        }
+
         return value;
     }
 
@@ -251,7 +266,17 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     
     public object? VisitVariableExpr(Variable expr)
     {
-        return _environment.Get(expr.Name);
+        return LookUpVariable(expr.Name, expr);
+    }
+
+    private object? LookUpVariable(Token name, Expr expr)
+    {
+        if (_locals.TryGetValue(expr, out int distance))
+        {
+            return _environment.GetAt(distance, name.Lexeme);
+        }
+
+        return _globals.Get(name);
     }
     
     public object? VisitBlockStmt(Block stmt)

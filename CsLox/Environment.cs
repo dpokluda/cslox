@@ -2,22 +2,48 @@ namespace CsLox;
 
 public class Environment
 {
-    private readonly Environment? _enclosing;
+    public Environment? Enclosing { get; init; }
+    
     private readonly Dictionary<string, object?> _values = new();
     
     public Environment()
     {
-        _enclosing = null;
+        Enclosing = null;
     }
     
     public Environment(Environment enclosing)
     {
-        _enclosing = enclosing;
+        Enclosing = enclosing;
     }
     
     public void Define(string name, object? value)
     {
         _values[name] = value;
+    }
+    
+    public object? GetAt(int distance, string name)
+    {
+        return Ancestor(distance)._values[name];
+    }
+    
+    public void AssignAt(int distance, Token name, object? value)
+    {
+        Ancestor(distance)._values[name.Lexeme] = value;
+    }
+
+    private Environment Ancestor(int distance)
+    {
+        Environment environment = this;
+        for (int i = 0; i < distance; i++)
+        {
+            if (environment.Enclosing == null)
+            {
+                throw new InvalidOperationException("No enclosing environment.");
+            }
+            environment = environment.Enclosing;
+        }
+        
+        return environment;
     }
 
     public object? Get(Token name)
@@ -27,28 +53,28 @@ public class Environment
             return value;
         }
         
-        if (_enclosing != null)
+        if (Enclosing != null)
         {
-            return _enclosing.Get(name);
+            return Enclosing.Get(name);
         }
         
         throw new RuntimeException(name, $"Undefined variable '{name.Lexeme}'.");
     }
 
-    public void Assign(string name, object? value)
+    public void Assign(Token name, object? value)
     {
-        if (_values.ContainsKey(name))
+        if (_values.ContainsKey(name.Lexeme))
         {
-            _values[name] = value;
+            _values[name.Lexeme] = value;
             return;
         }
         
-        if (_enclosing != null)
+        if (Enclosing != null)
         {
-            _enclosing.Assign(name, value);
+            Enclosing.Assign(name, value);
             return;
         }
         
-        throw new RuntimeException(null, $"Undefined variable '{name}'.");
+        throw new RuntimeException(null, $"Undefined variable '{name.Lexeme}'.");
     }
 }
