@@ -9,8 +9,10 @@ public abstract class Stmt
      {
          T VisitBlockStmt(Block stmt);
          T VisitExpressionStmt(Expression stmt);
+         T VisitFunctionStmt(Function stmt);
          T VisitIfStmt(If stmt);
          T VisitPrintStmt(Print stmt);
+         T VisitReturnStmt(Return stmt);
          T VisitVarStmt(Var stmt);
          T VisitWhileStmt(While stmt);
      }
@@ -48,6 +50,25 @@ public class Expression : Stmt
     }
 }
 
+public class Function : Stmt
+{
+    public Function(Token name, List<Token> parameters, List<Stmt> body)
+    {
+        Name = name;
+        Parameters = parameters;
+        Body = body;
+    }
+
+    public Token Name { get; init; }
+    public List<Token> Parameters { get; init; }
+    public List<Stmt> Body { get; init; }
+
+    public override T Accept<T>(IVisitor<T> visitor)
+    {
+        return visitor.VisitFunctionStmt(this);
+    }
+}
+
 public class If : Stmt
 {
     public If(Expr condition, Stmt thenBranch, Stmt? elseBranch)
@@ -79,6 +100,23 @@ public class Print : Stmt
     public override T Accept<T>(IVisitor<T> visitor)
     {
         return visitor.VisitPrintStmt(this);
+    }
+}
+
+public class Return : Stmt
+{
+    public Return(Token keyword, Expr? value)
+    {
+        Keyword = keyword;
+        Value = value;
+    }
+
+    public Token Keyword { get; init; }
+    public Expr? Value { get; init; }
+
+    public override T Accept<T>(IVisitor<T> visitor)
+    {
+        return visitor.VisitReturnStmt(this);
     }
 }
 

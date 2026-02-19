@@ -2,7 +2,16 @@ namespace CsLox;
 
 public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 {
-    private Environment _environment = new();
+    private Environment _globals;
+    private Environment _environment;
+    
+    public Interpreter()
+    {
+        this._globals = new Environment();
+        _environment = this._globals;
+        
+        _globals.Define("clock", new Clock());
+    }
     
     public void Interpret(List<Stmt> statements)
     {
@@ -29,7 +38,7 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         statement.Accept(this);
     }
     
-    private void ExecuteBlock(List<Stmt> exprStatements, Environment environment)
+    internal void ExecuteBlock(List<Stmt> exprStatements, Environment environment)
     {
         var previous = _environment;
         try
@@ -158,7 +167,24 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitCallExpr(Call expr)
     {
-        throw new NotImplementedException();
+        var callee = Evaluate(expr.Callee);
+        var arguments = new List<object?>();
+        foreach (var argument in expr.Arguments)
+        {
+            arguments.Add(Evaluate(argument));
+        }
+        if (!(callee is ILoxCallable))
+        {
+            throw new RuntimeException(expr.Paren, "Can only call functions and classes.");
+        }
+        
+        ILoxCallable function = (ILoxCallable)callee;
+        if (arguments.Count != function.Arity())
+        {
+            throw new RuntimeException(expr.Paren, $"Expected {function.Arity()} arguments but got {arguments.Count}.");
+        }
+
+        return function.Call(this, arguments);
     }
 
     public object? VisitGetExpr(Get expr)
@@ -240,6 +266,13 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         return null;
     }
 
+    public object? VisitFunctionStmt(Function stmt)
+    {
+        var function = new LoxFunction(stmt, _environment);
+        _environment.Define(stmt.Name.Lexeme, function);
+        return null;
+    }
+
     public object? VisitIfStmt(If stmt)
     {
         if (IsTruthy(Evaluate(stmt.Condition)))
@@ -259,6 +292,17 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         var value = Evaluate(stmt.Expression);
         Console.WriteLine(Stringify(value));
         return null;
+    }
+
+    public object? VisitReturnStmt(Return stmt)
+    {
+        object? value = null;
+        if (stmt.Value != null)
+        {
+            value = Evaluate(stmt.Value);
+        }
+
+        throw new ReturnValue(value);
     }
 
     public object? VisitVarStmt(Var stmt)
