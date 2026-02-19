@@ -1,5 +1,7 @@
 namespace CsLox;
 
+using System.Linq.Expressions;
+
 public class Parser
 {
     private List<Token> _tokens;
@@ -11,6 +13,7 @@ public class Parser
         _current = 0;
     }
 
+    /*
     public Expr Parse()
     {
         try
@@ -22,10 +25,117 @@ public class Parser
             return null;
         }
     }
+    */
     
+    public List<Stmt> Parse()
+    {
+        var statements = new List<Stmt>();
+        while (!IsAtEnd())
+        {
+            statements.Add(Declaration());
+        }
+        
+        return statements;
+    }
+
+    private Stmt ExpressionStatement()
+    {
+        Expr expr = Expression();
+        Consume(TokenType.Semicolon, "Expect ';' after expression.");
+        return new Expression(expr);
+    }
+    
+    private List<Stmt> Block()
+    {
+        var statements = new List<Stmt>();
+
+        while (!Check(TokenType.RightBrace) && !IsAtEnd())
+        {
+            statements.Add(Declaration());
+        }
+
+        Consume(TokenType.RightBrace, "Expect '}' after block.");
+        return statements;
+    }
+
     private Expr Expression()
     {
-        return Equality();
+        return Assignment();
+    }
+
+    private Expr Assignment()
+    {
+        Expr expr = Equality();
+
+        if (Match(TokenType.Equal))
+        {
+            Token equals = Previous();
+            Expr value = Assignment();
+
+            if (expr is Variable variable)
+            {
+                Token name = variable.Name;
+                return new Assign(name, value);
+            }
+
+            Error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
+    }
+    
+    private Stmt Declaration()
+    {
+        try
+        {
+            if (Match(TokenType.Var))
+            {
+                return VarDeclaration();
+            }
+            
+            return Statement();
+        }
+        catch (ParseException)
+        {
+            Synchronize();
+            return null;
+        }
+    }
+
+    private Stmt Statement()
+    {
+        if (Match(TokenType.Print))
+        {
+            return PrintStatement();
+        }
+        
+        if (Match(TokenType.LeftBrace))
+        {
+            return new Block(Block());
+        }
+        
+        return ExpressionStatement();
+    }
+
+    private Stmt PrintStatement()
+    {
+        Expr value = Expression();
+        Consume(TokenType.Semicolon, "Expect ';' after value.");
+        return new Print(value);
+    }
+    
+    private Stmt VarDeclaration()
+    {
+        Token name = Consume(TokenType.Identifier, "Expect variable name.");
+
+        Expr initializer = null;
+        if (Match(TokenType.Equal))
+        {
+            initializer = Expression();
+        }
+
+        Consume(TokenType.Semicolon, "Expect ';' after variable declaration.");
+        return new Var(name, initializer);
     }
 
     private Expr Equality()
@@ -98,6 +208,11 @@ public class Parser
         if (Match(TokenType.True)) return new Literal(true);
         if (Match(TokenType.Nil)) return new Literal(null);
         if (Match(TokenType.Number, TokenType.String)) return new Literal(Previous().Literal);
+        
+        if (Match(TokenType.Identifier))
+        {
+            return new Variable(Previous());
+        }
         
         if (Match(TokenType.LeftParen))
         {

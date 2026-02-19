@@ -1,23 +1,29 @@
 namespace CsLox;
 
-public class Interpreter : Expr.IVisitor<object?>
+public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 {
-    public void Interpret(Expr expr)
+    private Environment _environment = new();
+    
+    public void Interpret(List<Stmt> statements)
     {
         try
         {
-            Console.WriteLine(Stringify(expr.Accept(this)));
+            foreach (var statement in statements)
+            {
+                Execute(statement);
+            }
         }
-        catch (RuntimeException e)
+        catch (RuntimeException error)
         {
-            Lox.RuntimeError(e);
+            Lox.RuntimeError(error);
         }
     }
 
-
     public object? VisitAssign(Assign expr)
     {
-        throw new NotImplementedException();
+        var value = Evaluate(expr.Value);
+        _environment.Assign(expr.Name.Lexeme, value);
+        return value;
     }
 
     public object? VisitBinary(Binary expr)
@@ -135,12 +141,35 @@ public class Interpreter : Expr.IVisitor<object?>
     
     public object? VisitVariable(Variable expr)
     {
-        throw new NotImplementedException();
+        return _environment.Get(expr.Name);
     }
     
     private object? Evaluate(Expr expr)
     {
         return expr.Accept(this);
+    }
+    
+    private void Execute(Stmt statement)
+    {
+        statement.Accept(this);
+    }
+    
+    private void ExecuteBlock(List<Stmt> exprStatements, Environment environment)
+    {
+        var previous = _environment;
+        try
+        {
+            _environment = environment;
+
+            foreach (var statement in exprStatements)
+            {
+                Execute(statement);
+            }
+        }
+        finally
+        {
+            _environment = previous;
+        }
     }
     
     private bool IsTruthy(object? @object)
@@ -186,5 +215,36 @@ public class Interpreter : Expr.IVisitor<object?>
         }
 
         return @object.ToString();
+    }
+
+    public object? VisitBlock(Block expr)
+    {
+        ExecuteBlock(expr.Statements, new Environment(_environment));
+        return null;
+    }
+
+    public object? VisitExpression(Expression expr)
+    {
+        Evaluate(expr.Expr);
+        return null;
+    }
+
+    public object? VisitPrint(Print expr)
+    {
+        var value = Evaluate(expr.Expression);
+        Console.WriteLine(Stringify(value));
+        return null;
+    }
+
+    public object? VisitVar(Var expr)
+    {
+        object? value = null;
+        if (expr.Initializer != null)
+        {
+            value = Evaluate(expr.Initializer);
+        }
+
+        _environment.Define(expr.Name.Lexeme, value);
+        return null;
     }
 }

@@ -56,11 +56,11 @@ class Lox
 
         if (hadError)
         {
-            Environment.Exit(65);
+            System.Environment.Exit(65);
         }
         else if (hadRuntimeError)
         {
-            Environment.Exit(70);
+            System.Environment.Exit(70);
         }
     }
 
@@ -86,14 +86,11 @@ class Lox
         var tokens = scanner.ScanTokens();
         
         var parser = new Parser(tokens);
-        var expr = parser.Parse();
+        var statements = parser.Parse();
         
         if (hadError) return;
         
-        var printer = new AstPrinter();
-        Console.WriteLine(expr.Accept(printer));
-        
-        interpreter.Interpret(expr);
+        interpreter.Interpret(statements);
     }
     
     public static void Error(int line, string message)

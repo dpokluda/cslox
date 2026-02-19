@@ -119,7 +119,9 @@ public class Scanner
       case '\t':
         // Ignore whitespace.
         break;
-      case '"':
+      case '\n':
+        _line++;
+        break;      case '"':
         String();
         break;
       default: 
