@@ -19,131 +19,6 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         }
     }
 
-    public object? VisitAssign(Assign expr)
-    {
-        var value = Evaluate(expr.Value);
-        _environment.Assign(expr.Name.Lexeme, value);
-        return value;
-    }
-
-    public object? VisitBinary(Binary expr)
-    {
-        var left = Evaluate(expr.Left);
-        var right = Evaluate(expr.Right);
-
-        double l;
-        double r;
-        switch (expr.Operator.Type)
-        {
-            case TokenType.Plus:
-                if (left is double lNum && right is double rNum)
-                {
-                    return lNum + rNum;
-                }
-                if (left is string lStr && right is string rStr)
-                {
-                    return lStr + rStr;
-                }
-                throw new RuntimeException(expr.Operator, "Operands must be two numbers or two strings.");
-            case TokenType.Minus:
-                l = CheckNumberOperand(expr.Operator, left);
-                r = CheckNumberOperand(expr.Operator, right);
-                return l - r;
-            case TokenType.Star:
-                l = CheckNumberOperand(expr.Operator, left);
-                r = CheckNumberOperand(expr.Operator, right);
-                return l * r;
-            case TokenType.Slash:
-                l = CheckNumberOperand(expr.Operator, left);
-                r = CheckNumberOperand(expr.Operator, right);
-                return l / r;
-            case TokenType.Greater:
-                l = CheckNumberOperand(expr.Operator, left);
-                r = CheckNumberOperand(expr.Operator, right);
-                return l > r;
-            case TokenType.GreaterEqual:
-                l = CheckNumberOperand(expr.Operator, left);
-                r = CheckNumberOperand(expr.Operator, right);
-                return l >= r;
-            case TokenType.Less:
-                l = CheckNumberOperand(expr.Operator, left);
-                r = CheckNumberOperand(expr.Operator, right);
-                return l < r;
-            case TokenType.LessEqual:
-                l = CheckNumberOperand(expr.Operator, left);
-                r = CheckNumberOperand(expr.Operator, right);
-                return l <= r;
-            case TokenType.EqualEqual:
-                return Equals(left, right);
-            case TokenType.BangEqual:
-                return !Equals(left, right);
-        }
-
-        // unreachable
-        return null;
-    }
-
-    public object? VisitCall(Call expr)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object? VisitGet(Get expr)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object? VisitGrouping(Grouping expr)
-    {
-        return Evaluate(expr.Expression);
-    }
-
-    public object? VisitLiteral(Literal expr)
-    {
-        return expr.Value;
-    }
-
-    public object? VisitLogical(Logical expr)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object? VisitSet(Set expr)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object? VisitSuper(Super expr)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object? VisitThis(This expr)
-    {
-        throw new NotImplementedException();
-    }
-
-    public object? VisitUnary(Unary expr)
-    {
-        var right = expr.Right.Accept(this);
-
-        switch (expr.Operator.Type)
-        {
-            case TokenType.Minus: 
-                return -(double)right;
-            case TokenType.Bang: 
-                return !IsTruthy(right);
-        }
-        
-        // unreachable
-        return null;
-    }
-    
-    public object? VisitVariable(Variable expr)
-    {
-        return _environment.Get(expr.Name);
-    }
-    
     private object? Evaluate(Expr expr)
     {
         return expr.Accept(this);
@@ -216,35 +91,195 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
         return @object.ToString();
     }
-
-    public object? VisitBlock(Block expr)
+    
+    public object? VisitAssignExpr(Assign expr)
     {
-        ExecuteBlock(expr.Statements, new Environment(_environment));
+        var value = Evaluate(expr.Value);
+        _environment.Assign(expr.Name.Lexeme, value);
+        return value;
+    }
+
+    public object? VisitBinaryExpr(Binary expr)
+    {
+        var left = Evaluate(expr.Left);
+        var right = Evaluate(expr.Right);
+
+        double l;
+        double r;
+        switch (expr.Operator.Type)
+        {
+            case TokenType.Plus:
+                if (left is double lNum && right is double rNum)
+                {
+                    return lNum + rNum;
+                }
+                if (left is string lStr && right is string rStr)
+                {
+                    return lStr + rStr;
+                }
+                throw new RuntimeException(expr.Operator, "Operands must be two numbers or two strings.");
+            case TokenType.Minus:
+                l = CheckNumberOperand(expr.Operator, left);
+                r = CheckNumberOperand(expr.Operator, right);
+                return l - r;
+            case TokenType.Star:
+                l = CheckNumberOperand(expr.Operator, left);
+                r = CheckNumberOperand(expr.Operator, right);
+                return l * r;
+            case TokenType.Slash:
+                l = CheckNumberOperand(expr.Operator, left);
+                r = CheckNumberOperand(expr.Operator, right);
+                return l / r;
+            case TokenType.Greater:
+                l = CheckNumberOperand(expr.Operator, left);
+                r = CheckNumberOperand(expr.Operator, right);
+                return l > r;
+            case TokenType.GreaterEqual:
+                l = CheckNumberOperand(expr.Operator, left);
+                r = CheckNumberOperand(expr.Operator, right);
+                return l >= r;
+            case TokenType.Less:
+                l = CheckNumberOperand(expr.Operator, left);
+                r = CheckNumberOperand(expr.Operator, right);
+                return l < r;
+            case TokenType.LessEqual:
+                l = CheckNumberOperand(expr.Operator, left);
+                r = CheckNumberOperand(expr.Operator, right);
+                return l <= r;
+            case TokenType.EqualEqual:
+                return Equals(left, right);
+            case TokenType.BangEqual:
+                return !Equals(left, right);
+        }
+
+        // unreachable
         return null;
     }
 
-    public object? VisitExpression(Expression expr)
+    public object? VisitCallExpr(Call expr)
     {
-        Evaluate(expr.Expr);
+        throw new NotImplementedException();
+    }
+
+    public object? VisitGetExpr(Get expr)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitGroupingExpr(Grouping expr)
+    {
+        return Evaluate(expr.Expression);
+    }
+
+    public object? VisitLiteralExpr(Literal expr)
+    {
+        return expr.Value;
+    }
+
+    public object? VisitLogicalExpr(Logical expr)
+    {
+        var left = Evaluate(expr.Left);
+
+        if (expr.Operator.Type == TokenType.Or)
+        {
+            if (IsTruthy(left)) return left;
+        }
+        else
+        {
+            if (!IsTruthy(left)) return left;
+        }
+
+        return Evaluate(expr.Right);
+    }
+
+    public object? VisitSetExpr(Set expr)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitSuperExpr(Super expr)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitThisExpr(This expr)
+    {
+        throw new NotImplementedException();
+    }
+
+    public object? VisitUnaryExpr(Unary expr)
+    {
+        var right = expr.Right.Accept(this);
+
+        switch (expr.Operator.Type)
+        {
+            case TokenType.Minus: 
+                return -(double)right;
+            case TokenType.Bang: 
+                return !IsTruthy(right);
+        }
+        
+        // unreachable
+        return null;
+    }
+    
+    public object? VisitVariableExpr(Variable expr)
+    {
+        return _environment.Get(expr.Name);
+    }
+    
+    public object? VisitBlockStmt(Block stmt)
+    {
+        ExecuteBlock(stmt.Statements, new Environment(_environment));
         return null;
     }
 
-    public object? VisitPrint(Print expr)
+    public object? VisitExpressionStmt(Expression stmt)
     {
-        var value = Evaluate(expr.Expression);
+        Evaluate(stmt.Expr);
+        return null;
+    }
+
+    public object? VisitIfStmt(If stmt)
+    {
+        if (IsTruthy(Evaluate(stmt.Condition)))
+        {
+            Execute(stmt.ThenBranch);
+        }
+        else if (stmt.ElseBranch != null)
+        {
+            Execute(stmt.ElseBranch);
+        }
+
+        return null;
+    }
+
+    public object? VisitPrintStmt(Print stmt)
+    {
+        var value = Evaluate(stmt.Expression);
         Console.WriteLine(Stringify(value));
         return null;
     }
 
-    public object? VisitVar(Var expr)
+    public object? VisitVarStmt(Var stmt)
     {
         object? value = null;
-        if (expr.Initializer != null)
+        if (stmt.Initializer != null)
         {
-            value = Evaluate(expr.Initializer);
+            value = Evaluate(stmt.Initializer);
         }
 
-        _environment.Define(expr.Name.Lexeme, value);
+        _environment.Define(stmt.Name.Lexeme, value);
+        return null;
+    }
+
+    public object? VisitWhileStmt(While stmt)
+    {
+        while (IsTruthy(Evaluate(stmt.Condition)))
+        {
+            Execute(stmt.Body);
+        }
+
         return null;
     }
 }

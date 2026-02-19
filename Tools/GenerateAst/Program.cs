@@ -61,11 +61,11 @@ class Program
                 // "Class      : Token name, Variable? superclass, List<Function> methods",
                 "Expression : Expr expr",
                 // "Function   : Token name, List<Token> parameters, List<Stmt> body",
-                // "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",
+                "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",
                 "Print      : Expr expression",
                 // "Return     : Token keyword, Expr? value",
                 "Var        : Token name, Expr? initializer",
-                // "While      : Expr condition, Stmt body"
+                "While      : Expr condition, Stmt body"
             ]);
         
         ConsoleEx.WriteLine(ConsoleColor.Green, "Finished.");

@@ -4,63 +4,63 @@ using System.Text;
 
 public class AstPrinter : Expr.IVisitor<string>
 {
-    public string VisitAssign(Assign expr)
+    public string VisitAssignExpr(Assign expr)
     {
         throw new NotImplementedException();
     }
 
-    public string VisitBinary(Binary expr)
+    public string VisitBinaryExpr(Binary expr)
     {
         return Parenthize(expr.Operator.Lexeme, expr.Left, expr.Right);
     }
 
-    public string VisitCall(Call expr)
+    public string VisitCallExpr(Call expr)
     {
         throw new NotImplementedException();
     }
 
-    public string VisitGet(Get expr)
+    public string VisitGetExpr(Get expr)
     {
         throw new NotImplementedException();
     }
 
-    public string VisitGrouping(Grouping expr)
+    public string VisitGroupingExpr(Grouping expr)
     {
         return Parenthize("group", expr.Expression);
     }
 
-    public string VisitLiteral(Literal expr)
+    public string VisitLiteralExpr(Literal expr)
     {
         if (expr.Value == null) return "nil";
         return expr.Value.ToString()!;
     }
 
-    public string VisitLogical(Logical expr)
+    public string VisitLogicalExpr(Logical expr)
     {
         throw new NotImplementedException();
     }
 
-    public string VisitSet(Set expr)
+    public string VisitSetExpr(Set expr)
     {
         throw new NotImplementedException();
     }
 
-    public string VisitSuper(Super expr)
+    public string VisitSuperExpr(Super expr)
     {
         throw new NotImplementedException();
     }
 
-    public string VisitThis(This expr)
+    public string VisitThisExpr(This expr)
     {
         throw new NotImplementedException();
     }
 
-    public string VisitUnary(Unary expr)
+    public string VisitUnaryExpr(Unary expr)
     {
         return Parenthize(expr.Operator.Lexeme, expr.Right);
     }
 
-    public string VisitVariable(Variable expr)
+    public string VisitVariableExpr(Variable expr)
     {
         throw new NotImplementedException();
     }

@@ -1,7 +1,5 @@
 namespace CsLox;
 
-using System.Linq.Expressions;
-
 public class Parser
 {
     private List<Token> _tokens;
@@ -13,20 +11,6 @@ public class Parser
         _current = 0;
     }
 
-    /*
-    public Expr Parse()
-    {
-        try
-        {
-            return Expression();
-        }
-        catch (ParseException e)
-        {
-            return null;
-        }
-    }
-    */
-    
     public List<Stmt> Parse()
     {
         var statements = new List<Stmt>();
@@ -65,7 +49,7 @@ public class Parser
 
     private Expr Assignment()
     {
-        Expr expr = Equality();
+        Expr expr = Or();
 
         if (Match(TokenType.Equal))
         {
@@ -83,7 +67,35 @@ public class Parser
 
         return expr;
     }
-    
+
+    private Expr Or()
+    {
+        Expr expr = And();
+
+        while (Match(TokenType.Or))
+        {
+            Token operatorToken = Previous();
+            Expr right = And();
+            expr = new Logical(expr, operatorToken, right);
+        }
+
+        return expr;
+    }
+
+    private Expr And()
+    {
+        Expr expr = Equality();
+
+        while (Match(TokenType.And))
+        {
+            Token operatorToken = Previous();
+            Expr right = Equality();
+            expr = new Logical(expr, operatorToken, right);
+        }
+
+        return expr;
+    }
+
     private Stmt Declaration()
     {
         try
@@ -104,9 +116,24 @@ public class Parser
 
     private Stmt Statement()
     {
+        if (Match(TokenType.For))
+        {
+            return ForStatement();
+        }
+        
+        if (Match(TokenType.If))
+        {
+            return IfStatement();
+        }
+        
         if (Match(TokenType.Print))
         {
             return PrintStatement();
+        }
+        
+        if (Match(TokenType.While))
+        {
+            return WhileStatement();
         }
         
         if (Match(TokenType.LeftBrace))
@@ -115,6 +142,83 @@ public class Parser
         }
         
         return ExpressionStatement();
+    }
+
+    private Stmt ForStatement()
+    {
+        Consume(TokenType.LeftParen, "Expect '(' after 'for'.");
+
+        Stmt? initializer;
+        if (Match(TokenType.Semicolon))
+        {
+            initializer = null;
+        }
+        else if (Match(TokenType.Var))
+        {
+            initializer = VarDeclaration();
+        }
+        else
+        {
+            initializer = ExpressionStatement();
+        }
+
+        Expr? condition = null;
+        if (!Check(TokenType.Semicolon))
+        {
+            condition = Expression();
+        }
+        Consume(TokenType.Semicolon, "Expect ';' after loop condition.");
+
+        Expr? increment = null;
+        if (!Check(TokenType.RightParen))
+        {
+            increment = Expression();
+        }
+        Consume(TokenType.RightParen, "Expect ')' after for clauses.");
+
+        Stmt body = Statement();
+
+        if (increment != null)
+        {
+            body = new Block(new List<Stmt>
+            {
+                body,
+                new Expression(increment)
+            });
+        }
+
+        if (condition == null)
+        {
+            condition = new Literal(true);
+        }
+        body = new While(condition, body);
+
+        if (initializer != null)
+        {
+            body = new Block(new List<Stmt>
+            {
+                initializer,
+                body
+            });
+        }
+
+        return body;
+    }
+
+    private Stmt IfStatement()
+    {
+        Consume(TokenType.LeftParen, "Expect '(' after 'if'.");
+        Expr condition = Expression();
+        Consume(TokenType.RightParen, "Expect ')' after if condition.");
+
+        Stmt thenBranch = Statement();
+        Stmt? elseBranch = null;
+        if (Match(TokenType.Else))
+        {
+            elseBranch = Statement();
+        }
+
+        return new If(condition, thenBranch, elseBranch);
     }
 
     private Stmt PrintStatement()
@@ -138,6 +242,16 @@ public class Parser
         return new Var(name, initializer);
     }
 
+    private Stmt WhileStatement()
+    {
+        Consume(TokenType.LeftParen, "Expect '(' after 'while'.");
+        Expr condition = Expression();
+        Consume(TokenType.RightParen, "Expect ')' after condition.");
+        Stmt body = Statement();
+
+        return new While(condition, body);
+    }
+    
     private Expr Equality()
     {
         Expr expr = Comparison();

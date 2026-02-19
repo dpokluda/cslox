@@ -34,7 +34,7 @@ public class AstGenerator
         
         writer.WriteLine($"public abstract class {baseName}");
         writer.WriteLine("{");
-        DefineVisitor(writer, typeFields);
+        DefineVisitor(writer, baseName, typeFields);
 
         writer.WriteLine("    public abstract T Accept<T>(IVisitor<T> visitor);");
         writer.WriteLine("}");
@@ -53,7 +53,7 @@ public class AstGenerator
         ConsoleEx.WriteLine(ConsoleColor.Green, $"Generated {baseName} in {path}.");
     }
 
-    private static void DefineVisitor(StreamWriter writer, List<(string ClassName, string Fields)> typeFields)
+    private static void DefineVisitor(StreamWriter writer, string baseName, List<(string ClassName, string Fields)> typeFields)
     {
         writer.WriteLine("     public interface IVisitor<T>");
         writer.WriteLine("     {");
@@ -61,7 +61,7 @@ public class AstGenerator
         // finish the IVisitor interface definition
         foreach (var (className, fields) in typeFields)
         {
-            writer.WriteLine($"         T Visit{className}({className} expr);");
+            writer.WriteLine($"         T Visit{className}{baseName}({className} {char.ToLower(baseName[0]) + baseName.Substring(1)});");
         }
         writer.WriteLine("     }");
         writer.WriteLine();
@@ -106,7 +106,7 @@ public class AstGenerator
         writer.WriteLine();
         writer.WriteLine("    public override T Accept<T>(IVisitor<T> visitor)");
         writer.WriteLine("    {");
-        writer.WriteLine($"        return visitor.Visit{className}(this);");
+        writer.WriteLine($"        return visitor.Visit{className}{baseName}(this);");
         writer.WriteLine("    }");
         
         writer.WriteLine("}");
