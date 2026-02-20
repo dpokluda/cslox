@@ -204,7 +204,13 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitGetExpr(Get expr)
     {
-        throw new NotImplementedException();
+        var obj = Evaluate(expr.Object);
+        if (obj is LoxInstance instance)
+        {
+            return instance.Get(expr.Name);
+        }
+        
+        throw new RuntimeException(expr.Name, "Only instances have properties.");
     }
 
     public object? VisitGroupingExpr(Grouping expr)
@@ -235,7 +241,15 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitSetExpr(Set expr)
     {
-        throw new NotImplementedException();
+        var obj = Evaluate(expr.Object);
+        if (obj is not LoxInstance instance)
+        {
+            throw new RuntimeException(expr.Name, "Only instances have fields.");
+        }
+
+        var value = Evaluate(expr.Value);
+        instance.Set(expr.Name, value);
+        return value;
     }
 
     public object? VisitSuperExpr(Super expr)
@@ -282,6 +296,14 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     public object? VisitBlockStmt(Block stmt)
     {
         ExecuteBlock(stmt.Statements, new Environment(_environment));
+        return null;
+    }
+
+    public object? VisitClassStmt(Class stmt)
+    {
+        _environment.Define(stmt.Name.Lexeme, stmt);
+        var @clas = new LoxClass(stmt.Name.Lexeme); // , null, stmt.Methods);
+        _environment.Assign(stmt.Name, @clas);
         return null;
     }
 

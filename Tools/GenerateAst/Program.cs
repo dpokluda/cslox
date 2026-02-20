@@ -58,7 +58,7 @@ class Program
             output.FullName,
             [
                 "Block      : List<Stmt> statements",
-                // "Class      : Token name, Variable? superclass, List<Function> methods",
+                "Class      : Token name, Variable? superclass, List<Function> methods",
                 "Expression : Expr expr",
                 "Function   : Token name, List<Token> parameters, List<Stmt> body",
                 "If         : Expr condition, Stmt thenBranch, Stmt? elseBranch",

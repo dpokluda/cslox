@@ -128,7 +128,8 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitGetExpr(Get expr)
     {
-        throw new NotImplementedException();
+        Resolve(expr.Object);
+        return null;
     }
 
     public object? VisitGroupingExpr(Grouping expr)
@@ -151,7 +152,9 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitSetExpr(Set expr)
     {
-        throw new NotImplementedException();
+        Resolve(expr.Value);
+        Resolve(expr.Object);
+        return null;
     }
 
     public object? VisitSuperExpr(Super expr)
@@ -186,6 +189,24 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         BeginScope();
         Resolve(stmt.Statements);
         EndScope();
+        return null;
+    }
+
+    public object? VisitClassStmt(Class stmt)
+    {
+        Declare(stmt.Name);
+        Define(stmt.Name);
+        
+        // if (stmt.Superclass != null)
+        // {
+        //     Resolve(stmt.Superclass);
+        // }
+        //
+        // foreach (var method in stmt.Methods)
+        // {
+        //     ResolveFunction(method, FunctionType.Function);
+        // }
+        
         return null;
     }
 
