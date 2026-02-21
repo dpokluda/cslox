@@ -6,11 +6,20 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     {
         None,
         Function,
+        Initializer,
+        Method,
+    }
+    
+    private enum ClassType
+    {
+        None,
+        Class,
     }
     
     private readonly Interpreter _interpreter;
     private readonly Stack<Dictionary<string, bool>> _scopes = new Stack<Dictionary<string, bool>>();
     private FunctionType _currentFunction = FunctionType.None;
+    private ClassType _currentClass = ClassType.None;
 
     public Resolver(Interpreter interpreter)
     {
@@ -164,7 +173,14 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitThisExpr(This expr)
     {
-        throw new NotImplementedException();
+        if (_currentClass == ClassType.None)
+        {
+            Lox.Error(expr.Keyword, "Can't use 'this' outside of a class.");
+            return null;
+        }
+        
+        ResolveLocal(expr, expr.Keyword);
+        return null;
     }
 
     public object? VisitUnaryExpr(Unary expr)
@@ -194,19 +210,33 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitClassStmt(Class stmt)
     {
+        var enclosingClass = _currentClass;
+        _currentClass = ClassType.Class;
+        
         Declare(stmt.Name);
         Define(stmt.Name);
+        
+        BeginScope();
+        _scopes.Peek()["this"] = true;
         
         // if (stmt.Superclass != null)
         // {
         //     Resolve(stmt.Superclass);
         // }
         //
-        // foreach (var method in stmt.Methods)
-        // {
-        //     ResolveFunction(method, FunctionType.Function);
-        // }
+        foreach (var method in stmt.Methods)
+        {
+            var declaration = FunctionType.Method;
+            if (method.Name.Lexeme == "init")
+            {
+                declaration = FunctionType.Initializer;
+            }
+            ResolveFunction(method, declaration);
+        }
         
+        EndScope();
+
+        _currentClass = enclosingClass;
         return null;
     }
 
@@ -252,6 +282,11 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         
         if (stmt.Value != null)
         {
+            if (_currentFunction == FunctionType.Initializer)
+            {
+                Lox.Error(stmt.Keyword, "Cannot return a value from an initializer.");
+            }
+            
             Resolve(stmt.Value);
         }
         

@@ -259,7 +259,7 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitThisExpr(This expr)
     {
-        throw new NotImplementedException();
+        return LookUpVariable(expr.Keyword, expr);
     }
 
     public object? VisitUnaryExpr(Unary expr)
@@ -302,8 +302,14 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     public object? VisitClassStmt(Class stmt)
     {
         _environment.Define(stmt.Name.Lexeme, stmt);
-        var @clas = new LoxClass(stmt.Name.Lexeme); // , null, stmt.Methods);
-        _environment.Assign(stmt.Name, @clas);
+        var methods = new Dictionary<string, LoxFunction>();
+        foreach (var method in stmt.Methods)
+        {
+            var function = new LoxFunction(method, _environment, method.Name.Lexeme == "init");
+            methods[method.Name.Lexeme] = function;
+        }
+        var @class = new LoxClass(stmt.Name.Lexeme, methods);
+        _environment.Assign(stmt.Name, @class);
         return null;
     }
 
@@ -315,7 +321,7 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitFunctionStmt(Function stmt)
     {
-        var function = new LoxFunction(stmt, _environment);
+        var function = new LoxFunction(stmt, _environment, false);
         _environment.Define(stmt.Name.Lexeme, function);
         return null;
     }
