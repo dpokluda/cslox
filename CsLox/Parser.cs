@@ -156,11 +156,11 @@ public class Parser
         Token name = Consume(TokenType.Identifier, "Expect class name.");
 
         Variable? superclass = null;
-        // if (Match(TokenType.Less))
-        // {
-        //     Consume(TokenType.Identifier, "Expect superclass name.");
-        //     superclass = new Variable(Previous());
-        // }
+        if (Match(TokenType.Less))
+        {
+            Consume(TokenType.Identifier, "Expect superclass name.");
+            superclass = new Variable(Previous());
+        }
 
         Consume(TokenType.LeftBrace, "Expect '{' before class body.");
 
@@ -444,9 +444,21 @@ public class Parser
         if (Match(TokenType.False)) return new Literal(false);
         if (Match(TokenType.True)) return new Literal(true);
         if (Match(TokenType.Nil)) return new Literal(null);
-        if (Match(TokenType.Number, TokenType.String)) return new Literal(Previous().Literal);
+        if (Match(TokenType.Number, TokenType.String))
+        {
+            return new Literal(Previous().Literal);
+        }
         
-        if (Match(TokenType.This))        {
+        if (Match(TokenType.Super))
+        {
+            Token keyword = Previous();
+            Consume(TokenType.Dot, "Expect '.' after 'super'.");
+            Token method = Consume(TokenType.Identifier, "Expect superclass method name.");
+            return new Super(keyword, method);
+        }
+        
+        if (Match(TokenType.This))
+        {
             return new This(Previous());
         }
         

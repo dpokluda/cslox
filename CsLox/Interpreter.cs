@@ -254,7 +254,18 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitSuperExpr(Super expr)
     {
-        throw new NotImplementedException();
+        if (!_locals.TryGetValue(expr, out int distance))
+        {
+            throw new RuntimeException(expr.Keyword, "Undefined super class.");
+        }
+        
+        var superclass = (LoxClass)_environment.GetAt(distance, "super")!;
+        var obj = (LoxInstance)_environment.GetAt(distance - 1, "this")!;
+        var method = superclass.FindMethod(expr.Method.Lexeme);
+        if (method == null)        {
+            throw new RuntimeException(expr.Method, $"Undefined property '{expr.Method.Lexeme}'.");
+        }
+        return method.Bind(obj);
     }
 
     public object? VisitThisExpr(This expr)
@@ -301,15 +312,39 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitClassStmt(Class stmt)
     {
+        object? superclass = null;
+        if (stmt.Superclass != null)
+        {
+            superclass = Evaluate(stmt.Superclass);
+            if (superclass is not LoxClass)
+            {
+                throw new RuntimeException(stmt.Superclass.Name, "Superclass must be a class.");
+            }
+        }
+        
         _environment.Define(stmt.Name.Lexeme, stmt);
+        
+        if (superclass != null)
+        {
+            _environment = new Environment(_environment);
+            _environment.Define("super", superclass);
+        }
+        
         var methods = new Dictionary<string, LoxFunction>();
         foreach (var method in stmt.Methods)
         {
             var function = new LoxFunction(method, _environment, method.Name.Lexeme == "init");
             methods[method.Name.Lexeme] = function;
         }
-        var @class = new LoxClass(stmt.Name.Lexeme, methods);
+        var @class = new LoxClass(stmt.Name.Lexeme, superclass as LoxClass, methods);
+        
+        if (superclass != null)
+        {
+            _environment = _environment.Enclosing!;
+        }
+        
         _environment.Assign(stmt.Name, @class);
+        
         return null;
     }
 

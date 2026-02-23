@@ -3,14 +3,14 @@ namespace CsLox;
 public class LoxClass : ILoxCallable
 {
     public string Name { get; init; }
-    // public LoxClass? Superclass { get; init; }
+    public LoxClass? Superclass { get; init; }
     private readonly Dictionary<string, LoxFunction> _methods;
 
-    public LoxClass(string name, Dictionary<string, LoxFunction> methods/*, LoxClass? superclass*/)
+    public LoxClass(string name, LoxClass? superclass, Dictionary<string, LoxFunction> methods)
     {
         Name = name;
         _methods = methods;
-        // Superclass = superclass;
+        Superclass = superclass;
     }   
     
     public override string ToString()
@@ -46,10 +46,10 @@ public class LoxClass : ILoxCallable
             return method;
         }
         
-        // if (Superclass != null)
-        // {
-        //     return Superclass.FindMethod(name);
-        // }
+        if (Superclass != null)
+        {
+            return Superclass.FindMethod(name);
+        }
         
         return null;
     }

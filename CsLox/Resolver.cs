@@ -14,6 +14,7 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     {
         None,
         Class,
+        Subclass,
     }
     
     private readonly Interpreter _interpreter;
@@ -168,7 +169,17 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
 
     public object? VisitSuperExpr(Super expr)
     {
-        throw new NotImplementedException();
+        if (_currentClass == ClassType.None)
+        {
+            Lox.Error(expr.Keyword, "Can't use 'super' outside of a class.");
+        }
+        else if (_currentClass != ClassType.Subclass)
+        {
+            Lox.Error(expr.Keyword, "Can't use 'super' in a class with no superclass.");
+        }
+        
+        ResolveLocal(expr, expr.Keyword);
+        return null;
     }
 
     public object? VisitThisExpr(This expr)
@@ -216,14 +227,26 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         Declare(stmt.Name);
         Define(stmt.Name);
         
+        if (stmt.Superclass != null && stmt.Name.Lexeme == stmt.Superclass.Name.Lexeme)
+        {
+            Lox.Error(stmt.Superclass.Name, "A class cannot inherit from itself.");
+        }
+        
+        if (stmt.Superclass != null)
+        {
+            _currentClass = ClassType.Subclass;
+            Resolve(stmt.Superclass);
+        }
+
+        if (stmt.Superclass != null)
+        {
+            BeginScope();
+            _scopes.Peek()["super"] = true;
+        }
+
         BeginScope();
         _scopes.Peek()["this"] = true;
         
-        // if (stmt.Superclass != null)
-        // {
-        //     Resolve(stmt.Superclass);
-        // }
-        //
         foreach (var method in stmt.Methods)
         {
             var declaration = FunctionType.Method;
@@ -235,6 +258,11 @@ public class Resolver : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
         }
         
         EndScope();
+        
+        if (stmt.Superclass != null)
+        {
+            EndScope();
+        }
 
         _currentClass = enclosingClass;
         return null;
