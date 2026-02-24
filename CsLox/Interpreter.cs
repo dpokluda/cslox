@@ -276,15 +276,14 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     public object? VisitUnaryExpr(Unary expr)
     {
         var right = expr.Right.Accept(this);
-
-        if (right == null)
-        {
-            throw new RuntimeException(expr.Operator, "Operand must be a number.");
-        }
         
         switch (expr.Operator.Type)
         {
-            case TokenType.Minus: 
+            case TokenType.Minus:
+                if (right == null)
+                {
+                    throw new RuntimeException(expr.Operator, "Operand must be a number.");
+                }
                 return -(double)right;
             case TokenType.Bang: 
                 return !IsTruthy(right);

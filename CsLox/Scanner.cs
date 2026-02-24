@@ -45,6 +45,7 @@ public class Scanner
       ScanToken();
     }
     
+    _tokens.Add(new Token(TokenType.Eof, "", null, _line));
     return _tokens;
   }
   

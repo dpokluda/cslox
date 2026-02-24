@@ -16,7 +16,8 @@ public class Parser
         var statements = new List<Stmt>();
         while (!IsAtEnd())
         {
-            statements.Add(Declaration());
+            var decl = Declaration();
+            if (decl != null) statements.Add(decl);
         }
         
         return statements;
@@ -514,7 +515,8 @@ public class Parser
     
     private Token Advance()
     {
-        return _tokens[_current++];
+        if (!IsAtEnd()) _current++;
+        return Previous();
     }
     
     private Token Previous()
@@ -525,28 +527,30 @@ public class Parser
     private void Synchronize()
     {
         Advance();
-        while (!IsAtEnd() && Previous().Type != TokenType.Semicolon) 
-            Advance();
-
-        switch (Peek().Type)
+        while (!IsAtEnd())
         {
-            case TokenType.Class:
-            case TokenType.For:
-            case TokenType.Fun:
-            case TokenType.If:
-            case TokenType.Print:
-            case TokenType.Return:
-            case TokenType.Var:
-            case TokenType.While:
-                return;
-        }
+            if (Previous().Type == TokenType.Semicolon) return;
 
-        Advance();
+            switch (Peek().Type)
+            {
+                case TokenType.Class:
+                case TokenType.For:
+                case TokenType.Fun:
+                case TokenType.If:
+                case TokenType.Print:
+                case TokenType.Return:
+                case TokenType.Var:
+                case TokenType.While:
+                    return;
+            }
+
+            Advance();
+        }
     }
     
     private bool IsAtEnd()
     {
-        return _current >= _tokens.Count;
+        return Peek().Type == TokenType.Eof;
     }
     
     private ParseException Error(Token token, string message)
