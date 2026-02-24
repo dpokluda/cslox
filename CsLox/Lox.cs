@@ -74,7 +74,11 @@ class Lox
             {
                 break;
             }
-            Run(line);
+
+            if (line != null)
+            {
+                Run(line);
+            }
         }
         
         hadError = false;
@@ -117,7 +121,7 @@ class Lox
 
     public static void RuntimeError(RuntimeException runtimeError)
     {
-        Console.WriteLine($"{runtimeError.Message}\n[line {runtimeError.Token.Line}]");
+        Console.WriteLine($"{runtimeError.Message}\n[line {runtimeError.Token?.Line}]");
         hadRuntimeError = true;
     }
 

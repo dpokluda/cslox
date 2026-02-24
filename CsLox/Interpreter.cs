@@ -277,6 +277,11 @@ public class Interpreter : Expr.IVisitor<object?>, Stmt.IVisitor<object?>
     {
         var right = expr.Right.Accept(this);
 
+        if (right == null)
+        {
+            throw new RuntimeException(expr.Operator, "Operand must be a number.");
+        }
+        
         switch (expr.Operator.Type)
         {
             case TokenType.Minus: 

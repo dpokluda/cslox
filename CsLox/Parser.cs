@@ -58,7 +58,7 @@ public class Parser
 
         while (!Check(TokenType.RightBrace) && !IsAtEnd())
         {
-            statements.Add(Declaration());
+            statements.Add(Declaration() ?? throw new InvalidOperationException());
         }
 
         Consume(TokenType.RightBrace, "Expect '}' after block.");
@@ -311,7 +311,7 @@ public class Parser
     {
         Token name = Consume(TokenType.Identifier, "Expect variable name.");
 
-        Expr initializer = null;
+        Expr? initializer = null;
         if (Match(TokenType.Equal))
         {
             initializer = Expression();

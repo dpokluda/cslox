@@ -28,7 +28,7 @@ public class LoxClass : ILoxCallable
         return initializer.Arity();
     }
 
-    public object Call(Interpreter interpreter, List<object> arguments)
+    public object Call(Interpreter interpreter, List<object?> arguments)
     {
         var instance = new LoxInstance(this);
         var initializer = FindMethod("init");

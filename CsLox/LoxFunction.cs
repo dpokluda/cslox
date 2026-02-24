@@ -19,7 +19,7 @@ public class LoxFunction : ILoxCallable
         return Declaration.Parameters.Count;
     }
 
-    public object? Call(Interpreter interpreter, List<object> arguments)
+    public object? Call(Interpreter interpreter, List<object?> arguments)
     {
         var environment = new Environment(Closure);
         for (var i = 0; i < Declaration.Parameters.Count; i++)
